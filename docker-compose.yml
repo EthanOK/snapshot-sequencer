@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  # Snapshot hub
+  snapshot-hub:
+    build: .
+    container_name: snapshot-sequencer
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    environment:
+      NETWORK: testnet
+      HUB_DATABASE_URL: mysql://admin:pwd@snapshot-mysql:3306/snapshot
+      SEQ_DATABASE_URL: mysql://admin:pwd@snapshot-mysql:3306/snapshot
+      RATE_LIMIT_DATABASE_URL: redis://redis:6379
+    ports:
+      - '3001:3001'
+
+  redis:
+    image: 'redis:latest'
+    # ports:
+    #   - ":6379"
+networks:
+  default:
+    name: snapshot-network
