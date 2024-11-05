@@ -31,6 +31,7 @@ const NETWORK_METADATA = {
   }
 };
 
+// TODO: handle request data 
 export default async function ingestor(req) {
   if (flaggedIps.includes(sha256(getIp(req)))) {
     return Promise.reject('unauthorized');
@@ -43,7 +44,7 @@ export default async function ingestor(req) {
 
   try {
     const body = req.body;
-
+    // TODO: validate body format
     const schemaIsValid = snapshot.utils.validateSchema(envelope, body);
     if (schemaIsValid !== true) {
       log.warn(`[ingestor] Wrong envelope format ${JSON.stringify(schemaIsValid)}`);
@@ -63,6 +64,7 @@ export default async function ingestor(req) {
 
     if (JSON.stringify(body).length > 1e5) return Promise.reject('too large message');
 
+    // TODO: Check if timestamp is valid
     if (message.timestamp > overTs || message.timestamp < underTs)
       return Promise.reject('wrong timestamp');
 
@@ -76,6 +78,7 @@ export default async function ingestor(req) {
     // Ignore EIP712Domain type, it's not used
     delete types.EIP712Domain;
 
+    // TODO: Check if types are valid
     const hash = sha256(JSON.stringify(types));
     if (!Object.keys(hashTypes).includes(hash)) return Promise.reject('wrong types');
     type = hashTypes[hash];
@@ -96,6 +99,7 @@ export default async function ingestor(req) {
       if (!message.space) return Promise.reject('unknown space');
 
       try {
+        // TODO: Check if space exists (query db)
         const space = await getSpace(message.space, false, message.network);
         if (!space) return Promise.reject('unknown space');
         network = space.network;
@@ -117,7 +121,7 @@ export default async function ingestor(req) {
       if (!(await isValidAlias(message.from, body.address))) return Promise.reject('wrong alias');
     }
 
-    // Check if signature is valid
+    // TODO:Check if signature is valid
     try {
       const isValidSig = await snapshot.utils.verify(body.address, body.sig, body.data, network, {
         broviderUrl: networkMetadata.broviderUrl
@@ -128,6 +132,7 @@ export default async function ingestor(req) {
       return Promise.reject('signature validation failed');
     }
 
+    // _TypedDataEncoder.hash(domain, types, message)
     const id = snapshot.utils.getHash(body.data, body.address);
     let payload = {};
 
@@ -244,6 +249,7 @@ export default async function ingestor(req) {
         hash: id,
         ...restBody
       };
+      //TODO: Pin data to IPFS 
       [pinned, receipt] = await Promise.all([
         pin(ipfsBody, process.env.PINEAPPLE_URL),
         issueReceipt(formattedSignature)
@@ -255,7 +261,9 @@ export default async function ingestor(req) {
     const ipfs = pinned.cid;
 
     try {
+      // TODO: Execute storage DB action By type
       await writer[type].action(legacyBody, ipfs, receipt, id, context);
+      // TODO: Store message in DB
       await storeMsg(
         id,
         ipfs,
