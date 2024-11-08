@@ -66,8 +66,14 @@ export async function verify(body): Promise<any> {
   }
 
   space.id = msg.space;
+  // TODO: add choices maxLength
+  const temp_proposal = snapshot.schemas.proposal;
+  temp_proposal.properties.choices.maxLengthWithSpaceType = {
+    default: 5000,
+    turbo: 10000
+  };
 
-  const schemaIsValid = snapshot.utils.validateSchema(snapshot.schemas.proposal, msg.payload, {
+  const schemaIsValid = snapshot.utils.validateSchema(temp_proposal, msg.payload, {
     spaceType: space.turbo ? 'turbo' : 'default'
   });
 
