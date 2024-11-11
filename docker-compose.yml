@@ -1,5 +1,11 @@
 version: '3.7'
 services:
+  # Redis
+  redis:
+    image: 'redis:latest'
+    ports:
+      - "6379:6379"
+
   # Snapshot hub
   snapshot-hub:
     build: .
@@ -13,12 +19,10 @@ services:
       HUB_DATABASE_URL: mysql://admin:pwd@snapshot-mysql:3306/snapshot
       SEQ_DATABASE_URL: mysql://admin:pwd@snapshot-mysql:3306/snapshot
       RATE_LIMIT_DATABASE_URL: redis://redis:6379
+      SCORE_API_URL: http://host.docker.internal:3003
     ports:
       - '3001:3001'  
-  redis:
-    image: 'redis:latest'
-    ports:
-      - "6379:6379"
+  
 networks:
   default:
     name: snapshot-network
