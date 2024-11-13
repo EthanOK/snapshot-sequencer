@@ -61,6 +61,7 @@ export function containsFlaggedLinks(body: string): boolean {
   return regex.test(body);
 }
 
+// TODO: auth set flaged verified hibernated
 export function flagEntity({ type, action, value }) {
   if (!type || !action || !value)
     throw new Error(`missing params. 'type', 'action' and 'value' required`);

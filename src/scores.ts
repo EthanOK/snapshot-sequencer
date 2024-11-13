@@ -104,6 +104,7 @@ export async function updateProposalAndVotes(proposalId: string, force = false) 
   if (proposal.scores_state === 'final') return true;
 
   if (!force && proposal.privacy === 'shutter' && proposal.state === 'closed') {
+    console.log('proposal privacy: shutter');
     await getDecryptionKey(proposal.id);
     return true;
   }
