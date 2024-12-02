@@ -18,7 +18,17 @@ export default rateLimit({
       429
     );
   },
-  skip: () => !redisClient?.isReady,
+  skip: (req, res) => {
+    if (!redisClient?.isReady) return true;
+    // TODO: rate limited
+    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+    console.log('apiKey:', apiKey);
+    let whiteList = ['https://snapshot.osp.org', 'http://localhost:8080'];
+    let apiKeyList = ['osp_snapshot_apiKey'];
+    if (whiteList.includes(req.headers['origin'])) return true;
+    if (apiKeyList.includes(apiKey)) return true;
+    return false;
+  },
   store: redisClient
     ? new RedisStore({
         sendCommand: (...args: string[]) => redisClient.sendCommand(args),

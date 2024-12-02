@@ -10,6 +10,7 @@ import { containsFlaggedLinks, flaggedAddresses } from '../helpers/moderation';
 import { isMalicious } from '../helpers/monitoring';
 import db from '../helpers/mysql';
 import { captureError, getQuorum, jsonParse, validateChoices } from '../helpers/utils';
+import { getOspAAccountByWeb3auth } from '../osp';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 const broviderUrl = process.env.BROVIDER_URL || 'https://rpc.snapshot.org';
@@ -144,10 +145,16 @@ export async function verify(body): Promise<any> {
           validationParams.minScore = minScore;
           validationParams.strategies = space.validation?.params?.strategies || space.strategies;
         }
+        console.log("body.address:",body.address);
+
+        // TODO: get Abstract Account By EOA
+       const aa = await getOspAAccountByWeb3auth(body.address, space.network)
+       console.log("aa:",aa);
+       
 
         isValid = await snapshot.utils.validate(
           validationName,
-          body.address,
+          aa||body.address,
           space.id,
           space.network,
           'latest',
@@ -180,8 +187,9 @@ export async function verify(body): Promise<any> {
       return Promise.reject('invalid snapshot block');
     return Promise.reject('unable to fetch block');
   }
-
+  return;
   try {
+    // TODO: limit proposals count, shuold delete this
     const [{ dayCount, monthCount, activeProposalsByAuthor }] = await getProposalsCount(
       space.id,
       body.address

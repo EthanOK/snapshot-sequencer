@@ -64,7 +64,7 @@ router.get('/spaces/:key/poke', async (req, res) => {
     return res.json({ error: e });
   }
 });
-
+// TODO: Auth flag
 router.post('/flag', verifyAuth, async (req, res) => {
   const { type, value, action } = req.body;
 

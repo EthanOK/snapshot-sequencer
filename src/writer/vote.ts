@@ -5,6 +5,7 @@ import log from '../helpers/log';
 import db from '../helpers/mysql';
 import { captureError, hasStrategyOverride, jsonParse } from '../helpers/utils';
 import { updateProposalAndVotes } from '../scores';
+import { getOspAAccountByWeb3auth, getOspBindEOAByWeb3auth } from '../osp';
 
 const scoreAPIUrl = process.env.SCORE_API_URL || 'https://score.snapshot.org';
 
@@ -54,9 +55,11 @@ export async function verify(body): Promise<any> {
       if (validationName === 'basic')
         validationParams.strategies = validationParams.strategies ?? proposal.strategies;
 
+      const aa = await getOspAAccountByWeb3auth(body.address, proposal.network);
+      console.log("vote aa", aa);
       const validate = await snapshot.utils.validate(
         validationName,
-        body.address,
+        aa || body.address,
         msg.space,
         proposal.network,
         proposal.snapshot,
@@ -77,8 +80,10 @@ export async function verify(body): Promise<any> {
 
   let vp: any = {};
   try {
+    const bindEOA = await getOspBindEOAByWeb3auth(body.address, proposal.network);
+    console.log("vote bindEOA", bindEOA);
     vp = await snapshot.utils.getVp(
-      body.address,
+      bindEOA || body.address,
       proposal.network,
       proposal.strategies,
       proposal.snapshot,

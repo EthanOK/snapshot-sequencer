@@ -230,6 +230,7 @@ export default async function ingestor(req) {
 
     let context;
     try {
+      console.log("type", type);
       context = await writer[type].verify(legacyBody);
     } catch (e) {
       if (typeof e !== 'string') {

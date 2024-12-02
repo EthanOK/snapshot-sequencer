@@ -21,7 +21,7 @@ export async function validateSpaceSettings(originalSpace: any) {
   delete space.turbo;
   delete space.hibernated;
   delete space.id;
-
+  // TODO:if snapshotEnv == mainnet, validate network
   const schemaIsValid: any = snapshot.utils.validateSchema(snapshot.schemas.space, space, {
     spaceType,
     snapshotEnv: SNAPSHOT_ENV
@@ -57,6 +57,7 @@ export async function validateSpaceSettings(originalSpace: any) {
 }
 
 export async function verify(body): Promise<any> {
+  console.log('[writer] Start verify space settings');
   const msg = jsonParse(body.msg);
   if (msg.space.length > 64) {
     return Promise.reject('id too long');
@@ -72,11 +73,12 @@ export async function verify(body): Promise<any> {
   } catch (e) {
     return Promise.reject(e);
   }
-
+ // TODO Get space[ens name] owner 
   const controller = await snapshot.utils.getSpaceController(msg.space, DEFAULT_NETWORK, {
     broviderUrl
   });
-  const isController = controller === body.address;
+  // const isController = controller === body.address;
+  const isController = (msg.space as string).endsWith("osp") || controller === body.address ;
 
   const admins = (space?.admins || []).map(admin => admin.toLowerCase());
   const isAdmin = admins.includes(body.address.toLowerCase());
